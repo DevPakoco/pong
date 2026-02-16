@@ -1,0 +1,60 @@
+{
+  "tasks": [
+    {
+      "type": "cppbuild",
+      "label": "build client",
+      "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
+      "args": [
+        "-fdiagnostics-color=always",
+        "-g",
+        "main.c",
+        "client.c",
+        "tui.c",
+        "..\\common\\common.c",
+        "-o",
+        "..\\.out\\pong_client.exe",
+        "-lws2_32"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\client\\"
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": ""
+    },
+    {
+      "type": "cppbuild",
+      "label": "build project",
+      "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
+      "args": [
+        "-fdiagnostics-color=always",
+        "-g",
+        "main.c",
+        "server\\server.c",
+        "client\\client.c",
+        "client\\tui.c",
+        "common\\common.c",
+        "-o",
+        ".out\\pong.exe",
+        "-lws2_32"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": ""
+    }
+  ],
+  "version": "2.0.0"
+}
