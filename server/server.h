@@ -1,11 +1,10 @@
 #ifndef SERVER_H
 #define SERVER_H
+
 #include <windows.h>
 
-int InitServer(SOCKET *resultSocket);
-int ConnectionAccept(SOCKET *listenSocket, SOCKET *clientSocket);
-int EchoLoop(SOCKET *clientSocket);
-int ShutdownConnection(SOCKET *socket);
-int server_test();
+int server_init(SOCKET *resultSocket);
+int server_tick(SOCKET listenSocket);
+int enqueue(SOCKET socket, char *buffer, size_t buffer_len);
 
 #endif

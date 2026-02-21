@@ -11,6 +11,7 @@
         "client.c",
         "tui.c",
         "..\\common\\common.c",
+        "..\\common\\packets.c",
         "-o",
         "..\\.out\\pong_client.exe",
         "-lws2_32"
@@ -36,9 +37,12 @@
         "-g",
         "main.c",
         "server\\server.c",
+        "server\\game.c",
+        "server\\workflow.c",
         "client\\client.c",
         "client\\tui.c",
         "common\\common.c",
+        "common\\packets.c",
         "-o",
         ".out\\pong.exe",
         "-lws2_32"

@@ -1,26 +1,40 @@
 #ifndef PACKETS_H
 #define PACKETS_H
 
-// ========== Region: Server to Client Packets ==========
-enum S2CPktId {
-    S2C_ID = 1
-};
+#pragma pack(push, 1)
 
-struct {
-    const S2CPktId pktId = S2C_ID;
-    int id;
-} S2CId;
+typedef enum packet_id_t {
+    PKT_ID_S2C_CONFIRM = 1,
+    PKT_ID_S2C_LOGIN_REQUEST = 2,
+    PKT_ID_C2S_LOGIN_REQUEST = 3
+} packet_id_t;
 
-// ========== Region: Client to Server Packets ==========
+typedef struct packet_header_t {
+    unsigned char version;
+    packet_id_t id;
+    int session_id;
+    size_t payload_len;
+} packet_header_t;
 
-enum C2SPktId {
-    C2S_ID = 1
-};
+typedef struct s2c_confirm_payload_t {
+    char ok;
+    size_t msg_len;
+    char *msg;
+} s2c_confirm_payload_t;
 
-struct {
-    const C2SPktId pktId = C2S_ID;
-    int id;
-    char name[32];
-} C2SId;
+typedef union payload_t {
+    s2c_confirm_payload_t confirm;
+    // others...
+} payload_t;
+
+typedef struct packet_t {
+    packet_header_t header;
+    payload_t payload;
+} packet_t;
+
+#pragma pack(pop)
+
+size_t s2c_confirm(char *dst, size_t dst_size, int session_id, const s2c_confirm_payload_t *payload);
+int des_s2c_confirm(const char *src, size_t src_len, s2c_confirm_payload_t *out_pyl);
 
 #endif

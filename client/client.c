@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "../common/common.h"
+#include "../common/packets.h"
+
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Mswsock.lib")
@@ -13,6 +16,73 @@
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
+
+static const u_long FIONBIO_MODE = 1;
+
+int client_init(char *server_addr, SOCKET *result_socket) {
+    WSADATA wsa_data;
+    SOCKET connect_socket = INVALID_SOCKET;
+    struct addrinfo *addresses = NULL, hints;
+    int result = WSAStartup(MAKEWORD(2, 2), &wsa_data);
+    if (result != 0) {
+        printf("WSAStartup failed with error: %d\n", result);
+        return 1;
+    }
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    result = getaddrinfo(server_addr, DEFAULT_PORT, &hints, &addresses);
+    if (result != 0) {
+        printf("getaddrinfo failed with error: %d\n", result);
+        WSACleanup();
+        return 1;
+    }
+    for (struct addrinfo *ptr = addresses; ptr != NULL; ptr = ptr->ai_next) {
+        connect_socket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+        if (connect_socket == INVALID_SOCKET) {
+            printf("socket failed with error: %ld\n", WSAGetLastError());
+            WSACleanup();
+            return 1;
+        }
+        result = connect(connect_socket, ptr->ai_addr, (int)ptr->ai_addrlen);
+        if (result == SOCKET_ERROR) {
+            closesocket(connect_socket);
+            connect_socket = INVALID_SOCKET;
+            continue;
+        }
+        break;
+    }
+    freeaddrinfo(addresses);
+    if (connect_socket == INVALID_SOCKET) {
+        printf("Unable to connect to server!\n");
+        WSACleanup();
+        return 1;
+    }
+    ioctlsocket(connect_socket, FIONBIO, &FIONBIO_MODE);
+    *result_socket = connect_socket;
+    return 0;
+}
+
+int client_tick(SOCKET *socket) {
+    char recvbuf[DEFAULT_BUFLEN];
+    int recvbuflen = DEFAULT_BUFLEN;
+    int result;
+    do {
+        result = recv(*socket, recvbuf, recvbuflen, 0);
+        if (result > 0) {
+            printf("bytes received: %d\n", result);
+            s2c_confirm_payload_t payload;
+            result = des_s2c_confirm(recvbuf, recvbuflen, &payload);
+            if (result != 0) printf("error deserializing\n");
+            printf("deserialized data {\n");
+            printf("   %d\n", payload.ok);
+            printf("   %d\n", payload.msg_len);
+            printf("   %s\n", payload.msg);
+            printf("}\n");
+        }
+    } while (result > 0);
+}
 
 int client_test(char *address) {
     WSADATA wsaData;
